@@ -1,4 +1,6 @@
-# cheerio [![Build Status](https://secure.travis-ci.org/cheeriojs/cheerio.svg?branch=master)](http://travis-ci.org/cheeriojs/cheerio)
+# cheerio [![Build Status](https://secure.travis-ci.org/cheeriojs/cheerio.svg?branch=master)](http://travis-ci.org/cheeriojs/cheerio) [![Gittask](https://gittask.com/cheeriojs/cheerio.svg)](https://gittask.com/cheeriojs/cheerio)
+
+[![Join the chat at https://gitter.im/cheeriojs/cheerio](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/cheeriojs/cheerio?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Fast, flexible, and lean implementation of core jQuery designed specifically for the server.
 
@@ -150,7 +152,7 @@ Method for getting and setting data attributes. Gets or sets the data attribute 
 $('<div data-apple-color="red"></div>').data()
 //=> { appleColor: 'red' }
 
-$('<div data-apple-color="red"></div>').data('data-apple-color')
+$('<div data-apple-color="red"></div>').data('apple-color')
 //=> 'red'
 
 var apple = $('.apple').data('kind', 'mac')
@@ -238,6 +240,16 @@ $('.apple.green').toggleClass('fruit green red', true).html()
 #### .is( function(index) )
 Checks the current list of elements and returns `true` if _any_ of the elements match the selector. If using an element or Cheerio selection, returns `true` if _any_ of the elements match. If using a predicate function, the function is executed in the context of the selected element, so `this` refers to the current element.
 
+### Forms
+
+#### .serializeArray()
+
+Encode a set of form elements as an array of names and values.
+
+```js
+$('<form><input name="foo" value="bar" /></form>').serializeArray()
+//=> [ { name: 'foo', value: 'bar' } ]
+```
 
 ### Traversing
 
@@ -299,16 +311,18 @@ $('.apple').next().hasClass('orange')
 //=> true
 ```
 
-#### .nextAll()
-Gets all the following siblings of the first selected element.
+#### .nextAll([selector])
+Gets all the following siblings of the first selected element, optionally filtered by a selector.
 
 ```js
 $('.apple').nextAll()
 //=> [<li class="orange">Orange</li>, <li class="pear">Pear</li>]
+$('.apple').nextAll('.orange')
+//=> [<li class="orange">Orange</li>]
 ```
 
-#### .nextUntil()
-Gets all the following siblings up to but not including the element matched by the selector.
+#### .nextUntil([selector], [filter])
+Gets all the following siblings up to but not including the element matched by the selector, optionally filtered by another selector.
 
 ```js
 $('.apple').nextUntil('.pear')
@@ -323,16 +337,18 @@ $('.orange').prev().hasClass('apple')
 //=> true
 ```
 
-#### .prevAll()
-Gets all the preceding siblings of the first selected element.
+#### .prevAll([selector])
+Gets all the preceding siblings of the first selected element, optionally filtered by a selector.
 
 ```js
 $('.pear').prevAll()
 //=> [<li class="orange">Orange</li>, <li class="apple">Apple</li>]
+$('.pear').prevAll('.orange')
+//=> [<li class="orange">Orange</li>]
 ```
 
-#### .prevUntil()
-Gets all the preceding siblings up to but not including the element matched by the selector.
+#### .prevUntil([selector], [filter])
+Gets all the preceding siblings up to but not including the element matched by the selector, optionally filtered by another selector.
 
 ```js
 $('.pear').prevUntil('.apple')
@@ -350,7 +366,7 @@ $('li').slice(1, 2).length
 //=> 1
 ```
 
-#### .siblings( selector )
+#### .siblings([selector])
 Gets the first selected element's siblings, excluding itself.
 
 ```js
@@ -362,7 +378,7 @@ $('.pear').siblings('.orange').length
 
 ```
 
-#### .children( selector )
+#### .children([selector])
 Gets the children of the first selected element.
 
 ```js
@@ -441,7 +457,7 @@ $('li').not('.apple').length;
 Function:
 
 ```js
-$('li').filter(function(i, el) {
+$('li').not(function(i, el) {
   // this === el
   return $(this).attr('class') === 'orange';
 }).length;
@@ -515,7 +531,7 @@ $('li').get().length
 
 Search for a given element from among the matched elements.
 
-```
+```js
 $('.pear').index()
 //=> 2
 $('.orange').index('li')
@@ -699,6 +715,37 @@ $('ul').text()
 //    Pear
 ```
 
+#### .wrap( content )
+The .wrap() function can take any string or object that could be passed to the $() factory function to specify a DOM structure. This structure may be nested several levels deep, but should contain only one inmost element. A copy of this structure will be wrapped around each of the elements in the set of matched elements. This method returns the original set of elements for chaining purposes.
+
+```js
+var redFruit = $('<div class="red-fruit"></div>')
+$('.apple').wrap(redFruit)
+
+//=> <ul id="fruits">
+//     <div class="red-fruit">
+//      <li class="apple">Apple</li>
+//     </div>
+//     <li class="orange">Orange</li>
+//     <li class="plum">Plum</li>
+//   </ul>
+
+var healthy = $('<div class="healthy"></div>')
+$('li').wrap(healthy)
+
+//=> <ul id="fruits">
+//     <div class="healthy">
+//       <li class="apple">Apple</li>
+//     </div>
+//     <div class="healthy">
+//       <li class="orange">Orange</li>
+//     </div>
+//     <div class="healthy">
+//        <li class="plum">Plum</li>
+//     </div>
+//   </ul>
+```
+
 #### .css( [propertName] ) <br /> .css( [ propertyNames] ) <br /> .css( [propertyName], [value] ) <br /> .css( [propertName], [function] ) <br /> .css( [properties] )
 
 Get the value of a style property for the first element in the set of matched elements or set one or more CSS properties for every matched element.
@@ -758,10 +805,23 @@ $.root().append('<ul id="vegetables"></ul>').html();
 ```
 
 #### $.contains( container, contained )
-Checks to see if the `contained` DOM element is a descendent of the `container` DOM element.
+Checks to see if the `contained` DOM element is a descendant of the `container` DOM element.
 
 #### $.parseHTML( data [, context ] [, keepScripts ] )
 Parses a string into an array of DOM nodes. The `context` argument has no meaning for Cheerio, but it is maintained for API compatability.
+
+### Plugins
+
+Once you have loaded a document, you may extend the prototype or the equivalent `fn` property with custom plugin methods:
+
+```js
+var $ = cheerio.load('<html><body>Hello, <b>world</b>!</body></html>');
+$.prototype.logHtml = function() {
+  console.log(this.html());
+};
+
+$('body').logHtml(); // logs "Hello, <b>world</b>!" to the console
+```
 
 ### The "DOM Node" object
 

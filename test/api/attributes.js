@@ -206,6 +206,12 @@ describe('$(...)', function() {
       expect($el.data('test')).to.be('a');
     });
 
+    it('(key) : should recover from malformed JSON', function() {
+        var $el = cheerio('<div data-custom="{{templatevar}}">');
+
+        expect($el.data('custom')).to.be('{{templatevar}}');
+    });
+
     it('(hyphen key) : data addribute with hyphen should be camelized ;-)', function() {
       var data = $('.frey').data();
       expect(data).to.eql({
@@ -224,6 +230,14 @@ describe('$(...)', function() {
 
       expect(a.data('balls')).to.eql('giandor');
       expect(b.data('snack')).to.eql('chocoletti');
+    });
+
+    it('(key, value) : should set data for all elements in the selection', function() {
+      $('li').data('foo', 'bar');
+
+      expect($('li').eq(0).data('foo')).to.eql('bar');
+      expect($('li').eq(1).data('foo')).to.eql('bar');
+      expect($('li').eq(2).data('foo')).to.eql('bar');
     });
 
     it('(map) : object map should set multiple data attributes', function() {
